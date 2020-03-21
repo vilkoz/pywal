@@ -145,11 +145,17 @@ def get(img, light=False, backend="wal", cache_dir=CACHE_DIR, sat=""):
         backend = sys.modules["pywal.backends.%s" % backend]
         colors = getattr(backend, "get")(img, light)
         colors = colors_to_dict(saturate_colors(colors, sat), img)
+        colors['colors'] = darken_dark_colors(colors['colors'])
 
         util.save_file_json(colors, cache_file)
         logging.info("Generation complete.")
 
     return colors
+
+def darken_dark_colors(colors):
+    dark_colors = ['color{}'.format(x) for x in (1, 2, 3, 4, 5, 6, 7)]
+    ret = { k: util.darken_color(v, 0.2) if k in dark_colors else v for k, v in colors.items() }
+    return ret
 
 
 def file(input_file):
